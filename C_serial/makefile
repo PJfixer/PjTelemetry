@@ -2,8 +2,8 @@ CC=gcc
 CFLAGS= --std=c11 -I /usr/include
 LIBS= 
 
-all:
-	$(CC) $(CFLAGS) main.c -o main $(LIBS)
+all: serial.o
+	$(CC) $(CFLAGS) main.c $? -o main $(LIBS)
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $? -o $@ $(LIBS)
