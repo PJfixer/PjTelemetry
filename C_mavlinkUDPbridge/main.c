@@ -33,19 +33,31 @@
 extern int sockfd; 
 extern struct sockaddr_in servaddr;
 int port;
-extern bool SerialProcess;
-extern bool UdpProcess;
+extern volatile bool SerialProcess;
+extern volatile bool UdpProcess;
+
+pthread_t ThreadSer ;
+pthread_t ThreadUDP ;
+extern pthread_mutex_t conditionSer_locker ;
+extern pthread_cond_t conditionSer ;
+
+extern pthread_mutex_t conditionUdp_locker ;
+extern pthread_cond_t conditionUdp ;
 
 int main(int argc, char **argv)
 {
+	printf("my process ID is %d :",getpid());
 	fd_set input;
 	int max_fd;
 	struct timeval timeout;
 	port = open_port();
 	if(port != -1)
 	{
+		 set_baudrate(port,115200);
 		if(!open_connection("127.0.0.1",8000))
 		{
+			pthread_create(&ThreadSer, NULL,SerialTask,NULL);
+			pthread_create(&ThreadUDP, NULL,UdpTask,NULL);
 			while(1)
 			{
 				int n;
@@ -53,6 +65,9 @@ int main(int argc, char **argv)
 				FD_SET(port, &input);
 				FD_SET(sockfd, &input);
 				max_fd = (sockfd > port ? sockfd : port) + 1;
+				/*printf("port %d",port);
+				printf("socket %d",sockfd);
+				printf("max fd %d",max_fd);*/
 				timeout.tv_sec  = 10;
 				timeout.tv_usec = 0;
 				/* Do the select */
@@ -68,18 +83,32 @@ int main(int argc, char **argv)
 				   /* We have input */
 				  if (FD_ISSET(port, &input))
 					{
-					 fprintf(stdout,"DATA sur SERIAL \n"); 
-						if(SerialProcess == false)
-						{
-							// then run the serial Thread
-						}
+					 
+					 if(SerialProcess != true)
+					 {
+						SerialProcess = true;
+						printf("DATA sur SERIAL \n"); 
+						pthread_mutex_lock(&conditionSer_locker);
+						pthread_cond_signal(&conditionSer);
+						pthread_mutex_unlock(&conditionSer_locker);
+					 }
+							
+							
+						
 					}
-				  if (FD_ISSET(sockfd, &input))
+					if (FD_ISSET(sockfd, &input))
 					{
-					 fprintf(stdout,"DATA sur UDP \n"); 
+					 
 						if(UdpProcess == false)
 						{
-							// then run the udpthread
+							UdpProcess = true ;
+							printf("DATA sur UDP \n"); 
+							pthread_mutex_lock(&conditionUdp_locker);
+							pthread_cond_signal(&conditionUdp);
+							pthread_mutex_unlock(&conditionUdp_locker);
+						/*	pthread_create(&ThreadUDP, NULL,UdpTask,NULL);
+							printf("Run udp thread \n");
+							pthread_join(ThreadUDP,NULL);*/
 						}
 					}
 				 
@@ -87,8 +116,10 @@ int main(int argc, char **argv)
 				else
 				{
 				  fprintf(stdout,"TIMEOUT \n");
+				  write(port,"*IDN?\r\n",7); 
 				  
 				}
+			
 			}
 		}
 	}

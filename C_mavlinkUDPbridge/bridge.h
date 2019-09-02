@@ -4,7 +4,9 @@
 
 #include <stdbool.h>
 #include <pthread.h>
-void SerialTask(void);
-void UdpTask(void);
+#include "udp.h"
+#include "serial.h"
+void *SerialTask(void *arg);
+void *UdpTask(void *arg);
 
 #endif

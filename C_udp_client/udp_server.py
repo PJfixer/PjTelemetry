@@ -20,7 +20,7 @@ while True:
     print(data)
 
     if data:
-        """sent = sock.sendto((b'elle a du jus dans ses lolos'), address)
+        sent = sock.sendto((b'elle a du jus dans ses lolos'), address)
         print('sent {} bytes back to {}'.format(
-            sent, address))"""
+            sent, address))
 

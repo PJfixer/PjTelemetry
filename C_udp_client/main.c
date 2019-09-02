@@ -15,7 +15,10 @@
 			int            max_fd;
 			fd_set         input;
 			struct timeval timeout;
-			 char buffer[1024]; 
+			 char buffer[1024];
+
+			printf("&buffer : %d \n", &buffer);
+			printf("(char*)buffer : %d \n", (char*)buffer); 
 			
 			while(1)
 			{
@@ -43,6 +46,7 @@
 						int d, len; 
 						d = recvfrom(sockfd, (char *)buffer, 1024,MSG_WAITALL, (struct sockaddr *) &servaddr, &len); 
 						buffer[d] = '\0'; 
+						printf("received %d \n",d);
 						printf("Server : %s\n", buffer); 
 					 
 					 
