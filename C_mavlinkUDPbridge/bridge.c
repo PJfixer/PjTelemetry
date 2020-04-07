@@ -5,7 +5,7 @@
 pthread_mutex_t serial_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t udp_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t conditionSer_locker = PTHREAD_MUTEX_INITIALIZER;
-pthread_cond_t conditionSer = PTHREAD_COND_INITIALIZER ;
+pthread_cond_t conditionSer = PTHREAD_COND_INITIALIZER ; 
 
 pthread_mutex_t conditionUdp_locker = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t conditionUdp = PTHREAD_COND_INITIALIZER ;
@@ -20,33 +20,34 @@ void *SerialTask(void *arg)
 {
 	printf("hello from serial Thread !! \n");
 	char * SerBuf;
+	pthread_mutex_lock(&conditionSer_locker);
 	while(1)
 	{
-	pthread_mutex_lock(&conditionSer_locker);
-	pthread_cond_wait(&conditionSer,&conditionSer_locker);
+	
+	pthread_cond_wait(&conditionSer,&conditionSer_locker);//wait notification form main 
 	
 	pthread_mutex_lock(&serial_mutex); // lock serial port 
-	// here we read the data
 	
-	int d = read(port,&SerBuf,512);
+	
+	int d = read(port,&SerBuf,512); // here we read the data and store in Serbuf
    
-	fprintf(stdout,"read %d bytes from serial\n",d); 
+    fprintf(stdout,"read %d bytes from serial\n",d);  // porint the number of bytes we effectively read
+    
 	pthread_mutex_unlock(&serial_mutex); // unlock serial port 
 	
 	
 	pthread_mutex_lock(&udp_mutex); // lock udp socket 
-	// here we push the data
+	
 
-	sendto(sockfd,&SerBuf,d, 
-				MSG_CONFIRM, (const struct sockaddr *) &servaddr,  
-				sizeof(servaddr)); 
+	sendto(sockfd,&SerBuf,d,MSG_CONFIRM, (const struct sockaddr *) &servaddr,sizeof(servaddr)); // here we push the data
 				
 	
 	pthread_mutex_unlock(&udp_mutex); // unlock udp socket 
-	SerialProcess = false;
-	pthread_mutex_unlock(&conditionSer_locker);
+	
+	
 	
 	}
+	pthread_mutex_unlock(&conditionSer_locker);
 	pthread_exit(NULL);
 }
 
@@ -57,10 +58,11 @@ void *UdpTask(void *arg)
 	
 	int d, len;
 	char buffer[512]; 
+	pthread_mutex_lock(&conditionUdp_locker);
 	while(1)
 	{
-	pthread_mutex_lock(&conditionUdp_locker);
-	pthread_cond_wait(&conditionUdp,&conditionUdp_locker);
+	
+	pthread_cond_wait(&conditionUdp,&conditionUdp_locker); //wait notification from main 
 	
 	pthread_mutex_lock(&udp_mutex); // lock udp socket 
 	// here we read the data
@@ -74,7 +76,9 @@ void *UdpTask(void *arg)
 	// here we psuh the data
 	write(port,(char *)buffer,d); 
 	pthread_mutex_unlock(&serial_mutex); // unlock serial port
-	UdpProcess = false;
-	pthread_mutex_unlock(&conditionUdp_locker);
+
+	
+
 	}
+	pthread_mutex_unlock(&conditionUdp_locker);
 }

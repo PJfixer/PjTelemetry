@@ -1,7 +1,7 @@
 /*
  * main.c
  * 
- * Copyright 2019 PiAir <piair@debian>
+ * Copyright 2019 Pierre JEANNE <pierre.jeanne96@gmail.com>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -84,39 +84,32 @@ int main(int argc, char **argv)
 				  if (FD_ISSET(port, &input))
 					{
 					 
-					 if(SerialProcess != true)
-					 {
+						FD_CLR(port, &input); // clear the bit for serial port 
 						SerialProcess = true;
 						printf("DATA sur SERIAL \n"); 
-						pthread_mutex_lock(&conditionSer_locker);
+						pthread_mutex_lock(&conditionSer_locker); // notify SerialThread
 						pthread_cond_signal(&conditionSer);
 						pthread_mutex_unlock(&conditionSer_locker);
-					 }
+					 
 							
 							
 						
 					}
 					if (FD_ISSET(sockfd, &input))
 					{
-					 
-						if(UdpProcess == false)
-						{
-							UdpProcess = true ;
-							printf("DATA sur UDP \n"); 
-							pthread_mutex_lock(&conditionUdp_locker);
-							pthread_cond_signal(&conditionUdp);
-							pthread_mutex_unlock(&conditionUdp_locker);
-						/*	pthread_create(&ThreadUDP, NULL,UdpTask,NULL);
-							printf("Run udp thread \n");
-							pthread_join(ThreadUDP,NULL);*/
-						}
+						FD_CLR(sockfd, &input);  // clear the bit for udp  socket 
+						printf("DATA sur UDP \n"); 
+						pthread_mutex_lock(&conditionUdp_locker); // notify UdpThread
+						pthread_cond_signal(&conditionUdp);
+						pthread_mutex_unlock(&conditionUdp_locker);
+						
 					}
 				 
 				}
 				else
 				{
 				  fprintf(stdout,"TIMEOUT \n");
-				  write(port,"*IDN?\r\n",7); 
+				   
 				  
 				}
 			
