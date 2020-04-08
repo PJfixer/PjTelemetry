@@ -38,11 +38,18 @@ extern volatile bool UdpProcess;
 
 pthread_t ThreadSer ;
 pthread_t ThreadUDP ;
+
 extern pthread_mutex_t conditionSer_locker ;
 extern pthread_cond_t conditionSer ;
 
 extern pthread_mutex_t conditionUdp_locker ;
 extern pthread_cond_t conditionUdp ;
+
+extern pthread_mutex_t conditionSer_done_locker;
+extern pthread_cond_t conditionSer_done; 
+
+extern pthread_mutex_t conditionUdp_done_locker;
+extern pthread_cond_t conditionUdp_done;
 
 int main(int argc, char **argv)
 {
@@ -58,6 +65,10 @@ int main(int argc, char **argv)
 		{
 			pthread_create(&ThreadSer, NULL,SerialTask,NULL);
 			pthread_create(&ThreadUDP, NULL,UdpTask,NULL);
+			
+			pthread_mutex_lock(&conditionSer_done_locker);
+			pthread_mutex_lock(&conditionUdp_done_locker);
+
 			while(1)
 			{
 				int n;
@@ -91,7 +102,7 @@ int main(int argc, char **argv)
 						pthread_cond_signal(&conditionSer);
 						pthread_mutex_unlock(&conditionSer_locker);
 					 
-							
+						pthread_cond_wait(&conditionSer_done,&conditionSer_done_locker);//wait notification form serial thread work is done	
 							
 						
 					}
@@ -102,9 +113,14 @@ int main(int argc, char **argv)
 						pthread_mutex_lock(&conditionUdp_locker); // notify UdpThread
 						pthread_cond_signal(&conditionUdp);
 						pthread_mutex_unlock(&conditionUdp_locker);
+
+						pthread_cond_wait(&conditionUdp_done,&conditionUdp_done_locker); //wait notification from udp thread work is done
 						
 					}
-				 
+				
+				
+
+				
 				}
 				else
 				{
@@ -112,8 +128,10 @@ int main(int argc, char **argv)
 				   
 				  
 				}
-			
+				
 			}
+			pthread_mutex_unlock(&conditionSer_done_locker);
+			pthread_mutex_unlock(&conditionUdp_done_locker);
 		}
 	}
 	

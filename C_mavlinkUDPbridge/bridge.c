@@ -4,11 +4,22 @@
 
 pthread_mutex_t serial_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t udp_mutex = PTHREAD_MUTEX_INITIALIZER;
+
 pthread_mutex_t conditionSer_locker = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t conditionSer = PTHREAD_COND_INITIALIZER ; 
 
 pthread_mutex_t conditionUdp_locker = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t conditionUdp = PTHREAD_COND_INITIALIZER ;
+
+pthread_mutex_t conditionSer_done_locker = PTHREAD_MUTEX_INITIALIZER;
+pthread_cond_t conditionSer_done = PTHREAD_COND_INITIALIZER ; 
+
+pthread_mutex_t conditionUdp_done_locker = PTHREAD_MUTEX_INITIALIZER;
+pthread_cond_t conditionUdp_done = PTHREAD_COND_INITIALIZER ;
+
+
+
+
 
  volatile bool SerialProcess;
  volatile bool UdpProcess;
@@ -44,7 +55,9 @@ void *SerialTask(void *arg)
 	
 	pthread_mutex_unlock(&udp_mutex); // unlock udp socket 
 	
-	
+	pthread_mutex_lock(&conditionSer_done_locker); // notify main job is done 
+	pthread_cond_signal(&conditionSer_done);
+	pthread_mutex_unlock(&conditionSer_done_locker);
 	
 	}
 	pthread_mutex_unlock(&conditionSer_locker);
@@ -77,7 +90,9 @@ void *UdpTask(void *arg)
 	write(port,(char *)buffer,d); 
 	pthread_mutex_unlock(&serial_mutex); // unlock serial port
 
-	
+	pthread_mutex_lock(&conditionUdp_done_locker); // notify main job is done 
+	pthread_cond_signal(&conditionUdp_done);
+	pthread_mutex_unlock(&conditionUdp_done_locker);
 
 	}
 	pthread_mutex_unlock(&conditionUdp_locker);
