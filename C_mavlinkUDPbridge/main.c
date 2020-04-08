@@ -57,19 +57,19 @@ int main(int argc, char **argv)
 	fd_set input;
 	int max_fd;
 	struct timeval timeout;
-	port = open_port();
+	port = open_port(); // ask open serial TODO : specify SERIAL port  & UDP adress + port via arguments
 	if(port != -1)
 	{
-		 set_baudrate(port,115200);
+		 set_baudrate(port,115200); // set baudrate 
 		if(!open_connection("127.0.0.1",8000))
 		{
-			pthread_create(&ThreadSer, NULL,SerialTask,NULL);
-			pthread_create(&ThreadUDP, NULL,UdpTask,NULL);
+			pthread_create(&ThreadSer, NULL,SerialTask,NULL); //create a thread to get serial data and push it over UDP
+			pthread_create(&ThreadUDP, NULL,UdpTask,NULL); // //create a thread to get UDP data and push it over serial
 			
 			pthread_mutex_lock(&conditionSer_done_locker);
 			pthread_mutex_lock(&conditionUdp_done_locker);
 
-			while(1)
+			while(1) // ùain 
 			{
 				int n;
 				FD_ZERO(&input);
@@ -95,10 +95,10 @@ int main(int argc, char **argv)
 				  if (FD_ISSET(port, &input))
 					{
 					 
-						FD_CLR(port, &input); // clear the bit for serial port 
+						FD_CLR(port, &input); // clear the bit for serial port file descriptor
 						SerialProcess = true;
-						printf("DATA sur SERIAL \n"); 
-						pthread_mutex_lock(&conditionSer_locker); // notify SerialThread
+						printf("DATA on SERIAL \n"); 
+						pthread_mutex_lock(&conditionSer_locker); // notify SerialThread to wake up and process data
 						pthread_cond_signal(&conditionSer);
 						pthread_mutex_unlock(&conditionSer_locker);
 					 
@@ -108,9 +108,9 @@ int main(int argc, char **argv)
 					}
 					if (FD_ISSET(sockfd, &input))
 					{
-						FD_CLR(sockfd, &input);  // clear the bit for udp  socket 
-						printf("DATA sur UDP \n"); 
-						pthread_mutex_lock(&conditionUdp_locker); // notify UdpThread
+						FD_CLR(sockfd, &input);  // clear the bit for udp  socket  file descriptor
+						printf("DATA on UDP \n"); 
+						pthread_mutex_lock(&conditionUdp_locker); // notify UdpThread to wake up and process data
 						pthread_cond_signal(&conditionUdp);
 						pthread_mutex_unlock(&conditionUdp_locker);
 
@@ -124,7 +124,7 @@ int main(int argc, char **argv)
 				}
 				else
 				{
-				  fprintf(stdout,"TIMEOUT \n");
+				  fprintf(stdout,"TIMEOUT \n"); //we didn't get  any  data for 10 seconds 
 				   
 				  
 				}

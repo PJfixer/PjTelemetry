@@ -80,8 +80,11 @@ void *UdpTask(void *arg)
 	pthread_mutex_lock(&udp_mutex); // lock udp socket 
 	// here we read the data
 	d = recvfrom(sockfd,&buffer, 512,MSG_WAITALL, (struct sockaddr *) &servaddr, &len); 
-	printf("fail: %s",strerror(errno) );
-	buffer[d] = '\0'; 
+	if(d == -1)
+	{
+		printf("fail: %s",strerror(errno) );
+	}
+	buffer[d] = '\0';  // in order  to create proper str
 	pthread_mutex_unlock(&udp_mutex); // unlock udp socket 
 	fprintf(stdout,"read %d bytes from UDP\n",d); 
 	
