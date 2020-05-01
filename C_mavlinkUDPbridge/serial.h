@@ -9,7 +9,7 @@
 #include <termios.h> /* POSIX terminal control definitions */
 #include <stdlib.h>
 #include <unistd.h>
-int open_port(void);
+int open_port(char * port);
 void set_baudrate(int fd,unsigned int speed);
 
 #endif

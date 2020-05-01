@@ -52,21 +52,23 @@ void set_baudrate(int fd,unsigned int speed)
 	
 }
 
-int open_port(void)
+int open_port(char * port)
 {
   int fd; /* File descriptor */
 
 
-  fd = open("/dev/ttyUSB0", O_RDWR | O_NOCTTY | O_NDELAY);
+  fd = open(port, O_RDWR | O_NOCTTY | O_NDELAY);
   if (fd == -1)
   {
 
-
-    perror("open_port: Unable to open /dev/ttyUSB0 - ");
+    char str[50];
+    sprintf(str, "open_port: Unable to open %s \n ", port);
+    perror(str);
   }
   else
+  {
     fcntl(fd, F_SETFL, 0);
-
+  }
   return (fd);
 }
 
