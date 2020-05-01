@@ -11,5 +11,14 @@ The bridge is based on three thread :
   Both serial & udp were implemented in POSIX with standard libs (#include <termios.h> + ioctl)  &  <sys/socket.h>)
   
   This implementation is probably not the most optimized for reduce CPU usage but it seems to work...any suggestions are welcome.
-  
+
+
+Usage 
+
+example : MavlinkRem -u /dev/ttyUSB0 -b 115200 -d 127.0.0.1 -p 8000
+
+-u : UART serial device
+-b : baudrate (default = 115200)
+-d : destination address to send data from serial port 
+-p : destination port 
   
