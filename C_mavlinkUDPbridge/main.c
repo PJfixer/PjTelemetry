@@ -138,7 +138,7 @@ int main(int argc, char *argv[])
 					 
 						FD_CLR(port, &input); // clear the bit for serial port file descriptor
 						SerialProcess = true;
-						printf("DATA on SERIAL \n"); 
+						//printf("DATA on SERIAL \n"); 
 						pthread_mutex_lock(&conditionSer_locker); // notify SerialThread to wake up and process data
 						pthread_cond_signal(&conditionSer);
 						pthread_mutex_unlock(&conditionSer_locker);
@@ -150,7 +150,7 @@ int main(int argc, char *argv[])
 					if (FD_ISSET(sockfd, &input))
 					{
 						FD_CLR(sockfd, &input);  // clear the bit for udp  socket  file descriptor
-						printf("DATA on UDP \n"); 
+						//printf("DATA on UDP \n"); 
 						pthread_mutex_lock(&conditionUdp_locker); // notify UdpThread to wake up and process data
 						pthread_cond_signal(&conditionUdp);
 						pthread_mutex_unlock(&conditionUdp_locker);
